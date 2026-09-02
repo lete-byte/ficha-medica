@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ficha Médica</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 15px; margin-right: 10px; cursor: pointer; }
+        .search-section { margin-top: 30px; border-top: 2px solid #ccc; padding-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <h2>Ingreso Ficha Médica</h2>
+    <!-- El formulario incluye los 10 campos solicitados -->
+    <form id="fichaForm">
+        <div class="form-group"><label>RUT:</label><input type="text" id="rut" required pattern="\d{7,8}-[\dkK]" title="Ej: 12345678-9"></div>
+        <div class="form-group"><label>Nombres:</label><input type="text" id="nombres" required></div>
+        <div class="form-group"><label>Apellidos:</label><input type="text" id="apellidos" required></div>
+        <div class="form-group"><label>Dirección:</label><input type="text" id="direccion" required></div>
+        <div class="form-group"><label>Ciudad:</label><input type="text" id="ciudad" required></div>
+        <div class="form-group"><label>Teléfono:</label><input type="tel" id="telefono" required pattern="\d{8,11}"></div>
+        <div class="form-group"><label>Email:</label><input type="email" id="email" required></div>
+        <div class="form-group"><label>Fecha de Nacimiento:</label><input type="date" id="fechaNacimiento" required></div>
+        <div class="form-group">
+            <label>Estado Civil:</label>
+            <select id="estadoCivil" required>
+                <option value="">Seleccione...</option>
+                <option value="Soltero/a">Soltero/a</option>
+                <option value="Casado/a">Casado/a</option>
+                <option value="Viudo/a">Viudo/a</option>
+            </select>
+        </div>
+        <div class="form-group"><label>Comentarios:</label><textarea id="comentarios" rows="4"></textarea></div>
+        
+        <!-- Botones solicitados -->
+        <button type="submit" id="btnGuardar">Guardar</button>
+        <button type="button" id="btnLimpiar">Limpiar</button>
+        <button type="button" id="btnCerrar">Cerrar</button>
+    </form>
+
+    <div class="search-section">
+        <h3>Búsqueda de Usuarios</h3>
+        <div class="form-group">
+            <label>Buscar por Apellido:</label>
+            <input type="text" id="searchApellido">
+            <button type="button" id="btnBuscar" style="margin-top: 10px;">Buscar</button>
+        </div>
+        <div id="resultadosBusqueda"></div>
+    </div>
+
+    <script>
+        // Simulador de Base de Datos usando LocalStorage
+        const dbKey = 'fichasMedicas';
+
+        function getFichas() {
+            return JSON.parse(localStorage.getItem(dbKey)) || [];
+        }
+
+        function saveFicha(ficha) {
+            const fichas = getFichas();
+            const index = fichas.findIndex(f => f.rut === ficha.rut);
+
+            if (index !== -1) {
+                // Si el registro existe debe preguntar si desea sobrescribir
+                const confirmar = confirm("El RUT ya existe en el sistema. ¿Desea sobrescribir el registro?");
+                if (confirmar) {
+                    fichas[index] = ficha;
+                    localStorage.setItem(dbKey, JSON.stringify(fichas));
+                    alert("Registro actualizado con éxito.");
+                }
+            } else {
+                fichas.push(ficha);
+                localStorage.setItem(dbKey, JSON.stringify(fichas));
+                alert("Registro guardado con éxito.");
+            }
+        }
+
+        // Lógica del botón Guardar (conectado al submit para aprovechar validación HTML5)
+        document.getElementById('fichaForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Evita la recarga de la página
+            
+            const ficha = {
+                rut: document.getElementById('rut').value,
+                nombres: document.getElementById('nombres').value,
+                apellidos: document.getElementById('apellidos').value,
+                direccion: document.getElementById('direccion').value,
+                ciudad: document.getElementById('ciudad').value,
+                telefono: document.getElementById('telefono').value,
+                email: document.getElementById('email').value,
+                fechaNacimiento: document.getElementById('fechaNacimiento').value,
+                estadoCivil: document.getElementById('estadoCivil').value,
+                comentarios: document.getElementById('comentarios').value
+            };
+            
+            saveFicha(ficha);
+        });
+
+        // Lógica del botón Limpiar
+        document.getElementById('btnLimpiar').addEventListener('click', function() {
+            document.getElementById('fichaForm').reset();
+        });
+
+        // Lógica del botón Cerrar
+        document.getElementById('btnCerrar').addEventListener('click', function() {
+            if(confirm("¿Está seguro que desea cerrar la aplicación?")) {
+                window.close(); // Nota: Por seguridad de navegadores, solo cierra ventanas abiertas por scripts
+                document.body.innerHTML = "<h2>Aplicación Cerrada</h2>";
+            }
+        });
+
+        // Lógica del botón Buscar
+        document.getElementById('btnBuscar').addEventListener('click', function() {
+            const query = document.getElementById('searchApellido').value.toLowerCase();
+            if (!query) {
+                alert("Ingrese un apellido para buscar.");
+                return;
+            }
+
+            const fichas = getFichas();
+            // Buscar por apellido
+            const resultados = fichas.filter(f => f.apellidos.toLowerCase().includes(query));
+            
+            const resultDiv = document.getElementById('resultadosBusqueda');
+            if (resultados.length > 0) {
+                let html = '<ul>';
+                resultados.forEach(r => {
+                    html += `<li>${r.nombres} ${r.apellidos} - RUT: ${r.rut} - Tel: ${r.telefono}</li>`;
+                });
+                html += '</ul>';
+                resultDiv.innerHTML = html;
+            } else {
+                resultDiv.innerHTML = "<p>No se encontraron registros con ese apellido.</p>";
+            }
+        });
+    </script>
+</body>
+</html>
