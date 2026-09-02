@@ -79,7 +79,7 @@
             }
         }
 
-        // Lógica del botón Guardar (conectado al submit para aprovechar validación HTML5)
+        // Lógica del botón Guardar 
         document.getElementById('fichaForm').addEventListener('submit', function(e) {
             e.preventDefault(); // Evita la recarga de la página
             
@@ -107,7 +107,7 @@
         // Lógica del botón Cerrar
         document.getElementById('btnCerrar').addEventListener('click', function() {
             if(confirm("¿Está seguro que desea cerrar la aplicación?")) {
-                window.close(); // Nota: Por seguridad de navegadores, solo cierra ventanas abiertas por scripts
+                window.close(); 
                 document.body.innerHTML = "<h2>Aplicación Cerrada</h2>";
             }
         });
